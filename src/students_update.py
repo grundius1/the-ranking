@@ -48,7 +48,7 @@ def labs_to_db(studentslist):
         labs.append(title)
     labs=set(labs)
     for item in labs:
-        db.labs.update_one({ "title": item },
+        db.labs.replace_one({ "title": item },
             { 
             "Name":item,
             },
