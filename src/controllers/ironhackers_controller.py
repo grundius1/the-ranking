@@ -16,7 +16,7 @@ def welcome():
 
 
 
-@app.route("/student/all",endpoint='func2')
+@app.route("/student/all")
 @asJsonResponse
 def get_all_students():
     data = db["people"].find()
@@ -24,7 +24,7 @@ def get_all_students():
 
 
 # http://localhost:3000/saludo?color=rojo&idioma=en
-@app.route("/create/<studentname>",endpoint='func1')
+@app.route("/create/<studentname>")
 @asJsonResponse
 def get_students(studentname):
     student_data = db["people"].find_one({"githubuser" : studentname})

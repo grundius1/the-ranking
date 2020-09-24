@@ -20,17 +20,17 @@ def get_total_gitrepos(apiKey=os.getenv("API_KEY")):
     return repos[0]["number"]
 
 def get_total_dbrepos(all = False):
-    data = db["repositories"].find()
+    data = db["repositories"].find({"state":"closed"})
     repos = get_total_gitrepos()
     totalrepos = list(range(1,repos+1))
     if all == False:
         for item in list(data):
             totalrepos.remove(item["number"])
+        return totalrepos
     else:
         return totalrepos
-    
 
-def repo_updater(apiKey=os.getenv("API_KEY")):
+def repo_updater(apiKey=os.getenv("API_KEY"), all = False):
     headers = {
         "Authorization": f"Bearer {apiKey}"
     }
@@ -39,6 +39,7 @@ def repo_updater(apiKey=os.getenv("API_KEY")):
     for item in max_repos:
         url = f"https://api.github.com/repos/ironhack-datalabs/datamad0820/pulls/{item}"
         res = requests.get(url, headers=headers)
+        print(f"getting repo Nº{item}")
         if res.status_code == 404:
             pass
         else:
@@ -46,6 +47,7 @@ def repo_updater(apiKey=os.getenv("API_KEY")):
     return repolist
 
 def repo_to_db(repolist):
+    previous_lab_name = ''
     for item in repolist:
         commentsurl = item["comments_url"]
         comments = commentsgetter(commentsurl)
@@ -53,38 +55,31 @@ def repo_to_db(repolist):
         puller = db.people.find_one({ "gthubid" : item["user"]["id"]},{"_id":1}).values()
         collaborators = collaborators_identifier(comments)
         collaborators.extend(puller)
-        #print(item["number"])
-        #print(item["title"].split()[0].replace("[","").replace("]",""))
-        #print(item["state"])
+        title = previous_lab_name if len(re.findall(r"\[lab-.+\]",item["title"]))==0 else re.findall(r"\[lab-.+\]",item["title"])
+        previous_lab_name = title
+        labname = db["labs"].find_one({"Name": title[0]})["_id"]
+
         initdic= {
             "number" : item["number"],
             "state" : item["state"],
-            "title" : item["title"].split()[0].replace("[","").replace("]",""),
-            "created_date" : item["created_at"]
+            "title" : labname,
+            "created_date" : item["created_at"],
+            f"collaborators": collaborators
         }
-        for value in range(len(collaborators)):
-            initdic.update({
-                f"collaborator {value+1}": collaborators[value]
-            })
-
-        if item["state"] == "closed":
-            if len(memes) != 0:
-                for meme in range(len(memes)):
-                    initdic.update({
-                        f"meme {meme+1}": memes[meme]
+        print(f"inserting commit {item['number']}")
+        if item["state"] == "closed":               
+                initdic.update({
+                        f"memes": memes
                         })
                 db.repositories.replace_one({ "number": item["number"]},
                    initdic,
-                   upsert=True)
-            else:
-                db.repositories.replace_one({ "number": item["number"]},
-                   initdic,
-                   upsert=True)
-                
+                   upsert=True)                
         else:
             db.repositories.replace_one({ "number": item["number"]},
                 initdic,
                 upsert=True)
+    
+    
 
 
 def commentsgetter(url, apiKey=os.getenv("API_KEY")):
@@ -111,16 +106,6 @@ def meme_identifier(data):
         return []
     else:
         return memesurl
-
-
-
-    #googleurl = "https://images.google.com/searchbyimage?image_url="
-    #for item in memesurl:
-    #    print(item)
-    #    response = requests.get(googleurl+item)
-    #    soup = BeautifulSoup(response.text, 'html.parser')
-    #    print(soup.find_all("input", maxlength="2048"))
-
 
 def collaborators_identifier(data):
     #print(data)

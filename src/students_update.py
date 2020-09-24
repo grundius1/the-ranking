@@ -44,8 +44,8 @@ def students_to_db(studentslist):
 def labs_to_db(studentslist):
     labs=[]
     for item in studentslist:
-        title = re.sub(r"\[|\]","",item["title"].split()[0])
-        labs.append(title)
+        title = re.findall(r"\[lab-.+\]",item["title"])
+        labs.extend(title)
     labs=set(labs)
     for item in labs:
         db.labs.replace_one({ "title": item },
@@ -61,5 +61,5 @@ def labs_to_db(studentslist):
 
 
 if __name__== "__main__":
-    print(len(pulsldata()))
+    #print(len(pulsldata()))
     labs_to_db(pulsldata())

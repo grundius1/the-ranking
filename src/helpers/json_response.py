@@ -22,4 +22,5 @@ def asJsonResponse(fn):
             return json_response(data[0]),data[1]
         else:
             return json_response(data)
+    wrapper.__name__ = fn.__name__
     return wrapper
