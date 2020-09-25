@@ -18,7 +18,7 @@ pymongo
 
 ## Usage
 
-'/' endpoint : welcome to the api
+'/' endpoint : welcome to the api \n
 '/student/all': allows yo to view all students in the database
 '/create/<studentname>' : allows you to search a student in the database, if the student is not present it will update the students collection and search again
 '/<lab>/create': allows you to search a lab in the database aans update all the database if the lab is not in the collection
