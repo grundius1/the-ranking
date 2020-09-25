@@ -7,7 +7,7 @@ import json
 import re
 from src.database import db
 from src.students_update import pulsldata
-
+from datetime import timedelta,datetime
 
 
 def get_total_gitrepos(apiKey=os.getenv("API_KEY")):
@@ -30,12 +30,12 @@ def get_total_dbrepos(all = False):
     else:
         return totalrepos
 
-def repo_updater(apiKey=os.getenv("API_KEY"), all = False):
+def repo_updater(all ,apiKey=os.getenv("API_KEY") ):
     headers = {
         "Authorization": f"Bearer {apiKey}"
     }
     repolist =[]
-    max_repos = get_total_dbrepos()
+    max_repos = get_total_dbrepos(all)
     for item in max_repos:
         url = f"https://api.github.com/repos/ironhack-datalabs/datamad0820/pulls/{item}"
         res = requests.get(url, headers=headers)
@@ -58,18 +58,20 @@ def repo_to_db(repolist):
         title = previous_lab_name if len(re.findall(r"\[lab-.+\]",item["title"]))==0 else re.findall(r"\[lab-.+\]",item["title"])
         previous_lab_name = title
         labname = db["labs"].find_one({"Name": title[0]})["_id"]
-
+        last_commit = item["commits_url"]
+        last_commit = commentsgetter(last_commit)
+        last_commit = last_commit[-1]["commit"]["committer"]["date"]
         initdic= {
             "number" : item["number"],
             "state" : item["state"],
             "title" : labname,
-            "created_date" : item["created_at"],
-            f"collaborators": collaborators
+            "collaborators": collaborators
         }
         print(f"inserting commit {item['number']}")
         if item["state"] == "closed":               
                 initdic.update({
-                        f"memes": memes
+                        "memes": memes,
+                        "correction_time" : str(timegetter(item["closed_at"])-timegetter(last_commit)),
                         })
                 db.repositories.replace_one({ "number": item["number"]},
                    initdic,
@@ -79,7 +81,10 @@ def repo_to_db(repolist):
                 initdic,
                 upsert=True)
     
-    
+def timegetter(strtime):
+    date_format = "%Y-%m-%dT%H:%M:%S" 
+    time = datetime.strptime(strtime[:19], date_format)
+    return time
 
 
 def commentsgetter(url, apiKey=os.getenv("API_KEY")):
