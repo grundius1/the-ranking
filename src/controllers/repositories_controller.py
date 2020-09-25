@@ -10,16 +10,25 @@ import random
 @app.route("/<lab>/create")
 @asJsonResponse
 def get_repositories(lab):
+    '''
+    get a lab data from the Database or update if the lab is not found
+    '''
+    lab = "["+lab+"]"
     lab_data = db["labs"].find_one({"Name" : lab})
     if lab_data == None:
         labs_to_db(pulsldata())
-    lab_data = db["labs"].find_one({"Name" : lab},{"_id" : 1})
+    lab_data = db["labs"].find_one({"Name" : lab})
     return lab_data
     
 
 @app.route("/lab/update")
 @asJsonResponse
 def update_repositories():
+    '''
+    this function allows you to update the repositories of the database,
+    depending of the parameter it updates all the database or only the opened and the 
+    new ones 
+    '''
     all = request.args.get("all")
     if all == "True":
         repo.repo_to_db(repo.repo_updater(True))
@@ -30,6 +39,10 @@ def update_repositories():
 @app.route("/<lab_id>/search")
 @asJsonResponse
 def get_student_sub(lab_id):
+    '''
+    this function shows you info about a lab, if you give a name as parameter it 
+    gives you info about a lab for specific student
+    '''
     lab = "["+lab_id+"]"
     lab = db["labs"].find_one({"Name": lab})
     name = request.args.get("name")
@@ -85,6 +98,9 @@ def get_student_sub(lab_id):
 @app.route("/lab/<lab_id>/meme")
 @asJsonResponse
 def get_meme(lab_id):
+    '''
+    return a random meme from the lab called
+    '''
     lab = "["+lab_id+"]"
     lab = db["labs"].find_one({"Name": lab})["_id"]
     repos = db["repositories"].find({"$and" :[{"state": "closed"} , {"title" : lab}]})
@@ -96,6 +112,9 @@ def get_meme(lab_id):
 @app.route("/lab/memeranking")
 @asJsonResponse
 def get_memeranking():
+    '''
+    gives you a ranking of the most used meme by lab
+    '''
     memes = db.repositories.aggregate([
         {"$unwind": "$memes" },
         {'$group': {'_id': {"state":"$state", "meme":"$memes", "title": "$title"},'count': {'$sum': 1}}}

@@ -10,6 +10,9 @@ import re
 
 
 def pulsldata(apiKey=os.getenv("API_KEY")):
+    '''
+    get all the pulls from datamad 0820
+    '''
     headers = {
         "Authorization": f"Bearer {apiKey}"
     }
@@ -26,11 +29,13 @@ def pulsldata(apiKey=os.getenv("API_KEY")):
             break
         else:
             data.extend(res.json())
-    print()
     return data
         
         
 def students_to_db(studentslist):
+    '''
+    loads student in database
+    '''
     for item in studentslist:
         db.people.replace_one({ "gthubid": item["user"]["id"] },
             { 
@@ -42,6 +47,9 @@ def students_to_db(studentslist):
 
 
 def labs_to_db(studentslist):
+    '''
+    loads the labs in the daatabase
+    '''
     labs=[]
     for item in studentslist:
         title = re.findall(r"\[lab-.+\]",item["title"])

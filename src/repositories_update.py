@@ -11,6 +11,9 @@ from datetime import timedelta,datetime
 
 
 def get_total_gitrepos(apiKey=os.getenv("API_KEY")):
+    '''
+    gives the last pull request in datamad0820
+    '''
     headers = {
         "Authorization": f"Bearer {apiKey}"
     }
@@ -20,6 +23,9 @@ def get_total_gitrepos(apiKey=os.getenv("API_KEY")):
     return repos[0]["number"]
 
 def get_total_dbrepos(all = False):
+    '''
+    create a list for the repos to update
+    '''
     data = db["repositories"].find({"state":"closed"})
     repos = get_total_gitrepos()
     totalrepos = list(range(1,repos+1))
@@ -31,6 +37,9 @@ def get_total_dbrepos(all = False):
         return totalrepos
 
 def repo_updater(all ,apiKey=os.getenv("API_KEY") ):
+    '''
+    creates a list wuith the info of all the pull requests
+    '''
     headers = {
         "Authorization": f"Bearer {apiKey}"
     }
@@ -47,6 +56,9 @@ def repo_updater(all ,apiKey=os.getenv("API_KEY") ):
     return repolist
 
 def repo_to_db(repolist):
+    '''
+    loads all the pulls into the database
+    '''
     labs_to_db(pulsldata())
     previous_lab_name = ''
     for item in repolist:
@@ -83,12 +95,18 @@ def repo_to_db(repolist):
                 upsert=True)
     
 def timegetter(strtime):
+    '''
+    transform datetime string to datetime item
+    '''
     date_format = "%Y-%m-%dT%H:%M:%S" 
     time = datetime.strptime(strtime[:19], date_format)
     return time
 
 
 def commentsgetter(url, apiKey=os.getenv("API_KEY")):
+    '''
+    given an url it makes a call to the url and return the data in JSON
+    '''
     headers = {
         "Authorization": f"Bearer {apiKey}"
     }
@@ -97,6 +115,9 @@ def commentsgetter(url, apiKey=os.getenv("API_KEY")):
     return data
 
 def meme_identifier(data):
+    '''
+    identifies an image in the comments of the pull
+    '''
     regex = r"\(https://user-images.githubuser.+\)"
     memesurl=[]
     for item in data:
@@ -113,6 +134,9 @@ def meme_identifier(data):
         return memesurl
 
 def collaborators_identifier(data):
+    '''
+    identifies all the students who have made comments in a pull
+    '''
     collaborators = []
     teachers_id = [52798316,52798316,49686519,57899051]
     for item in range(len(data)):

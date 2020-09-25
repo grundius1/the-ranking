@@ -19,6 +19,9 @@ def welcome():
 @app.route("/student/all")
 @asJsonResponse
 def get_all_students():
+    '''
+    retunr all the students in the database
+    '''
     data = db["people"].find()
     return data
 
@@ -27,6 +30,9 @@ def get_all_students():
 @app.route("/create/<studentname>")
 @asJsonResponse
 def get_students(studentname):
+    '''
+    search for student in the database and update it if not found
+    '''
     student_data = db["people"].find_one({"githubuser" : studentname})
     if student_data == None:
         students_to_db(pulsldata())
