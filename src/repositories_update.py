@@ -6,7 +6,7 @@ import requests
 import json
 import re
 from src.database import db
-from src.students_update import pulsldata
+from src.students_update import pulsldata,labs_to_db
 from datetime import timedelta,datetime
 
 
@@ -47,6 +47,7 @@ def repo_updater(all ,apiKey=os.getenv("API_KEY") ):
     return repolist
 
 def repo_to_db(repolist):
+    labs_to_db(pulsldata())
     previous_lab_name = ''
     for item in repolist:
         commentsurl = item["comments_url"]
@@ -96,7 +97,6 @@ def commentsgetter(url, apiKey=os.getenv("API_KEY")):
     return data
 
 def meme_identifier(data):
-    #print(re.sub(r"\(|\)","",data[0]["body"]))
     regex = r"\(https://user-images.githubuser.+\)"
     memesurl=[]
     for item in data:
@@ -113,11 +113,9 @@ def meme_identifier(data):
         return memesurl
 
 def collaborators_identifier(data):
-    #print(data)
     collaborators = []
     teachers_id = [52798316,52798316,49686519,57899051]
     for item in range(len(data)):
-        #print(type(item))
         if data[item]["user"]["id"] in teachers_id:
             pass
         else:

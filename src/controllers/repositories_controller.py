@@ -1,4 +1,3 @@
-import numpy as np
 from src.app import app
 from flask import request
 from src.database import db
@@ -15,7 +14,7 @@ def get_repositories(lab):
     if lab_data == None:
         labs_to_db(pulsldata())
     lab_data = db["labs"].find_one({"Name" : lab},{"_id" : 1})
-    return lab_data["_id"]
+    return lab_data
     
 
 @app.route("/lab/update")
@@ -82,8 +81,6 @@ def get_student_sub(lab_id):
 
         }]
 
-        
-
 
 @app.route("/lab/<lab_id>/meme")
 @asJsonResponse
@@ -103,10 +100,9 @@ def get_memeranking():
     memes = db.repositories.aggregate([
         {"$unwind": "$memes" },
         {'$group': {'_id': {"state":"$state", "meme":"$memes", "title": "$title"},'count': {'$sum': 1}}}
-    ])#.sort({"_id.count":1})
+    ])
     memes_clean=[]
 
-    #print(len(list(memes)[0]))
     for item in list(memes):
         dic = item["_id"]
         item.pop("_id")
@@ -116,8 +112,6 @@ def get_memeranking():
     for item in memes_clean:
         item["title"] = db["labs"].find_one({"_id": item["title"]})["Name"]
     print(memes_clean)
-    #    memes_clean.append(item["_id"])
-        #["title"] = db["labs"].find_one({"_id": item["_id"]["title"]},{"_id":0})
     memes_clean = sorted(memes_clean, key = lambda x: x["count"], reverse=True)
     return memes_clean
     
