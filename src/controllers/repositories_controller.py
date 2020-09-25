@@ -91,7 +91,6 @@ def get_meme(lab_id):
     memes = []
     for item in list(repos):
         memes.extend(item["memes"])
-    print(memes)
     return random.choice(memes)
 
 @app.route("/lab/memeranking")
